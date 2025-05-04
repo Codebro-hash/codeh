@@ -1,0 +1,95 @@
+#include <iostream>
+#include <cstring>
+#include <cstdlib>
+using namespace std;
+
+struct Node {
+char data;
+Node* left;
+Node* right;
+
+Node(char value) : data(value), left(nullptr), right(nullptr) {}
+};
+
+class Tree {
+char prefix[20];
+
+public:
+Node* top;
+void expression(char[]);
+void nonRecursivePostorder(Node*);
+void deleteTree(Node*);
+};
+
+class Stack {
+Node* data[30];
+int top;
+public:
+Stack() : top(-1) {}
+bool isEmpty() {
+return top == -1;
+}
+void push(Node* p) {
+data[++top] = p;
+}
+Node* pop() {
+return data[top--];
+}
+};
+void Tree::expression(char prefix[]) {
+Stack s;
+Node* t1, * t2;
+int len = strlen(prefix);
+for (int i = len - 1; i >= 0; i--) {
+top = new Node(prefix[i]);
+if (isalpha(prefix[i])) {
+s.push(top);
+} else if (prefix[i] == '+' || prefix[i] == '-' || prefix[i] == '*' || prefix[i] == '/') {
+t2 = s.pop();
+t1 = s.pop();
+top->left = t2;
+top->right = t1;
+s.push(top);
+}
+}
+top = s.pop();
+}
+void Tree::nonRecursivePostorder(Node* root) {
+Stack s1, s2;
+Node* current = root;
+s1.push(current);
+while (!s1.isEmpty()) {
+current = s1.pop();
+s2.push(current);
+if (current->left) s1.push(current->left);
+if (current->right) s1.push(current->right);
+}
+cout << "Post-order traversal: ";
+while (!s2.isEmpty()) {
+current = s2.pop();
+cout << current->data << " ";
+}
+cout << endl;
+}
+void Tree::deleteTree(Node* node) {
+if (node == nullptr) return;
+deleteTree(node->left);
+deleteTree(node->right);
+cout << "Deleting node: " << node->data << endl;
+delete node;
+}
+int main() {
+char expr[20];
+Tree t;
+cout << "Enter Prefix Expression: ";
+cin >> expr;
+t.expression(expr);
+t.nonRecursivePostorder(t.top);
+cout << "Do you want to delete the tree? (1 for Yes, 0 for No): ";
+int choice;
+cin >> choice;
+if (choice == 1) {
+t.deleteTree(t.top);
+}
+return 0;
+}

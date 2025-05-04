@@ -1,0 +1,130 @@
+#include <iostream>
+#include <string>
+#include <algorithm>
+
+class Dictionary {
+private:
+    struct Node {
+        std::string keyword, meaning;
+        int height;
+        Node *left, *right;
+        Node(std::string k, std::string m) : keyword(k), meaning(m), height(1), left(nullptr), right(nullptr) {}
+    };
+
+    Node* root = nullptr;
+
+    int height(Node* n) { return n ? n->height : 0; }
+    int balanceFactor(Node* n) { return height(n->left) - height(n->right); }
+    void updateHeight(Node* n) { n->height = 1 + std::max(height(n->left), height(n->right)); }
+
+    Node* rotateRight(Node* y) {
+        Node* x = y->left;
+        y->left = x->right;
+        x->right = y;
+        updateHeight(y); updateHeight(x);
+        return x;
+    }
+
+    Node* rotateLeft(Node* x) {
+        Node* y = x->right;
+        x->right = y->left;
+        y->left = x;
+        updateHeight(x); updateHeight(y);
+        return y;
+    }
+
+    Node* balance(Node* n) {
+        updateHeight(n);
+        int bf = balanceFactor(n);
+        if (bf > 1) return balanceFactor(n->left) < 0 ? rotateRight(n->left = rotateLeft(n->left)) : rotateRight(n);
+        if (bf < -1) return balanceFactor(n->right) > 0 ? rotateLeft(n->right = rotateRight(n->right)) : rotateLeft(n);
+        return n;
+    }
+
+    Node* insert(Node* n, std::string k, std::string m) {
+        if (!n) return new Node(k, m);
+        if (k < n->keyword) n->left = insert(n->left, k, m);
+        else if (k > n->keyword) n->right = insert(n->right, k, m);
+        else { std::cout << "Keyword exists. Use update.\n"; return n; }
+        return balance(n);
+    }
+
+    Node* findMin(Node* n) { return n->left ? findMin(n->left) : n; }
+
+    Node* remove(Node* n, std::string k) {
+        if (!n) return nullptr;
+        if (k < n->keyword) n->left = remove(n->left, k);
+        else if (k > n->keyword) n->right = remove(n->right, k);
+        else {
+            if (!n->left || !n->right) {
+                Node* temp = n->left ? n->left : n->right;
+                delete n; return temp;
+            }
+            Node* s = findMin(n->right);
+            n->keyword = s->keyword; n->meaning = s->meaning;
+            n->right = remove(n->right, s->keyword);
+        }
+        return balance(n);
+    }
+
+    Node* update(Node* n, std::string k, std::string m) {
+        if (!n) return nullptr;
+        if (k < n->keyword) n->left = update(n->left, k, m);
+        else if (k > n->keyword) n->right = update(n->right, k, m);
+        else n->meaning = m;
+        return n;
+    }
+
+    void display(Node* n, bool asc) {
+        if (!n) return;
+        if (asc) { display(n->left, asc); std::cout << n->keyword << ": " << n->meaning << "\n"; display(n->right, asc); }
+        else { display(n->right, asc); std::cout << n->keyword << ": " << n->meaning << "\n"; display(n->left, asc); }
+    }
+
+    void destroy(Node* n) {
+        if (!n) return;
+        destroy(n->left); destroy(n->right); delete n;
+    }
+
+public:
+    ~Dictionary() { destroy(root); }
+    void add(std::string k, std::string m) { root = insert(root, k, m); }
+    void deleteKeyword(std::string k) { root = remove(root, k); }
+    void updateMeaning(std::string k, std::string m) { root = update(root, k, m); }
+    void display(bool asc = true) { display(root, asc); }
+    int maxComparisons() { return height(root); }
+};
+
+int main() {
+    Dictionary dict;
+    int choice;
+    std::string key, meaning;
+
+    while (true) {
+        std::cout << "\n--- Dictionary Menu ---\n1. Add Keyword\n2. Delete Keyword\n3. Update Meaning\n4. Display Ascending\n5. Display Descending\n6. Max Comparisons\n7. Exit\nEnter choice: ";
+        std::cin >> choice; std::cin.ignore();
+        switch (choice) {
+        case 1:
+            std::cout << "Enter keyword: "; getline(std::cin, key);
+            std::cout << "Enter meaning: "; getline(std::cin, meaning);
+            dict.add(key, meaning); break;
+        case 2:
+            std::cout << "Enter keyword to delete: "; getline(std::cin, key);
+            dict.deleteKeyword(key); break;
+        case 3:
+            std::cout << "Enter keyword to update: "; getline(std::cin, key);
+            std::cout << "Enter new meaning: "; getline(std::cin, meaning);
+            dict.updateMeaning(key, meaning); break;
+        case 4:
+            std::cout << "Dictionary (Ascending):\n"; dict.display(true); break;
+        case 5:
+            std::cout << "Dictionary (Descending):\n"; dict.display(false); break;
+        case 6:
+            std::cout << "Max comparisons: " << dict.maxComparisons() << "\n"; break;
+        case 7:
+            std::cout << "Exiting...\n"; return 0;
+        default:
+            std::cout << "Invalid choice.\n";
+        }
+    }
+}

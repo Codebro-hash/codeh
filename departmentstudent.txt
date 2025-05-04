@@ -1,0 +1,95 @@
+#include <iostream>
+#include <fstream>
+#include <string>
+using namespace std;
+
+void addStudent() {
+    ofstream outFile("students.txt", ios::app);
+    string rollNo, name, division, address;
+
+    cout << "Enter Roll Number: ";
+    getline(cin, rollNo);
+    cout << "Enter Name: ";
+    getline(cin, name);
+    cout << "Enter Division: ";
+    getline(cin, division);
+    cout << "Enter Address: ";
+    getline(cin, address);
+
+    outFile << rollNo << "," << name << "," << division << "," << address << endl;
+    outFile.close();
+    cout << "Student added successfully.\n";
+}
+
+void deleteStudent() {
+    string rollNo, line;
+    bool found = false;
+
+    cout << "Enter Roll Number to delete: ";
+    getline(cin, rollNo);
+
+    ifstream inFile("students.txt");
+    ofstream tempFile("temp.txt");
+
+    while (getline(inFile, line)) {
+        if (line.substr(0, line.find(',')) != rollNo) {
+                                                                                     
+            tempFile << line << endl;
+        } else {
+            found = true;
+        }
+    }
+
+    inFile.close();
+    tempFile.close();
+    remove("students.txt");
+    rename("temp.txt", "students.txt");
+
+    if (found)
+        cout << "Student deleted successfully.\n";
+    else
+        cout << "Student not found.\n";
+}
+
+void displayStudent() {
+    string rollNo, line;
+    bool found = false;
+
+    cout << "Enter Roll Number to display: ";
+    getline(cin, rollNo);
+
+    ifstream inFile("students.txt");
+
+    while (getline(inFile, line)) {
+        if (line.substr(0, line.find(',')) == rollNo) {
+            found = true;
+            cout << "Student Info: " << line << endl;
+            break;
+        }
+    }
+
+    inFile.close();
+
+    if (!found)
+        cout << "Student not found.\n";
+}
+
+int main() {
+    int choice;
+    string dummy; // to flush newline
+
+    while (true) {
+        cout << "\n1. Add Student\n2. Delete Student\n3. Display Student\n4. Exit\n";
+        cout << "Enter your choice: ";
+        cin >> choice;
+        getline(cin, dummy); // flush newline
+
+        switch (choice) {
+            case 1: addStudent(); break;
+            case 2: deleteStudent(); break;
+            case 3: displayStudent(); break;
+            case 4: cout << "Exiting..."; return 0;
+            default: cout << "Invalid choice.\n";
+        }
+    }
+}

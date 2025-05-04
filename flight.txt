@@ -1,0 +1,71 @@
+#include <iostream>
+#include <queue>
+using namespace std;
+
+int adj[50][50] = {0};
+bool visited[50];
+
+void dfs(int u, int n, string city[]) {
+    visited[u] = true;
+    cout << city[u] << " ";
+    for (int v = 0; v < n; v++)
+        if (adj[u][v] && !visited[v])
+            dfs(v, n, city);
+}
+
+void bfs(int u, int n, string city[]) {
+    bool vis[50] = {false};
+    queue<int> q;
+    q.push(u);
+    vis[u] = true;
+    while (!q.empty()) {
+        int cur = q.front(); q.pop();
+        cout << city[cur] << " ";
+        for (int v = 0; v < n; v++)
+            if (adj[cur][v] && !vis[v])
+                vis[v] = true, q.push(v);
+    }
+}
+
+int main() {
+    int n, start;
+    string city[50];
+    cout << "No. of cities: ";
+    cin >> n;
+
+    for (int i = 0; i < n; i++) {
+        cout << "City " << i << ": ";
+        cin >> city[i];
+    }
+
+    for (int i = 0; i < n; i++)
+        for (int j = i + 1; j < n; j++) {
+            cout << "Cost " << city[i] << "-" << city[j] << ": ";
+            cin >> adj[i][j];
+            adj[j][i] = adj[i][j];
+        }
+
+    cout << "\nEnter start index: ";
+    cin >> start;
+
+   for (int i = 0; i < 50; i++)
+    visited[i] = false;
+ 
+   cout << "DFS: ";
+    dfs(start, n, city);
+
+    cout << "\nBFS: ";
+    bfs(start, n, city);
+
+    bool connected = true;
+    for (int i = 0; i < n; i++)
+        if (!visited[i]) connected = false;
+
+        if (connected) {
+            cout << "\nGraph is CONNECTED.\n";
+        } else {
+            cout << "\nGraph is NOT CONNECTED.\n";
+        }
+        
+    return 0;
+}

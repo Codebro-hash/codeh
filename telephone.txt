@@ -1,0 +1,106 @@
+#include <iostream>
+#include <cstring>
+using namespace std;
+
+const int SIZE = 10;
+
+struct Node {
+    string key;
+    string value;
+    Node* next;
+};
+
+class HashTableChaining {
+    Node* table[SIZE];
+
+public:
+    HashTableChaining() {
+        for (int i = 0; i < SIZE; i++) table[i] = nullptr;
+    }
+
+    int hashFunction(string key) {
+        int sum = 0;
+        for (char ch : key) sum += ch;
+        return sum % SIZE;
+    }
+
+    void insert(string key, string value) {
+        int index = hashFunction(key);
+        Node* newNode = new Node{key, value, table[index]};
+        table[index] = newNode;
+    }
+
+    int search(string key) {
+        int index = hashFunction(key);
+        Node* temp = table[index];
+        int comparisons = 0;
+        while (temp) {
+            comparisons++;
+            if (temp->key == key) return comparisons;
+            temp = temp->next;
+        }
+        return comparisons;
+    }
+};
+
+class HashTableLinear {
+    string keys[SIZE];
+    string values[SIZE];
+    bool occupied[SIZE];
+
+public:
+    HashTableLinear() {
+        for (int i = 0; i < SIZE; i++) occupied[i] = false;
+    }
+
+    int hashFunction(string key) {
+        int sum = 0;
+        for (char ch : key) sum += ch;
+        return sum % SIZE;
+    }
+
+    void insert(string key, string value) {
+        int index = hashFunction(key);
+        while (occupied[index]) {
+            index = (index + 1) % SIZE;
+        }
+        keys[index] = key;
+        values[index] = value;
+        occupied[index] = true;
+    }
+
+    int search(string key) {
+        int index = hashFunction(key);
+        int comparisons = 0;
+        while (occupied[index]) {
+            comparisons++;
+            if (keys[index] == key) return comparisons;
+            index = (index + 1) % SIZE;
+        }
+        return comparisons;
+    }
+};
+
+int main() {
+    HashTableChaining htChain;
+    HashTableLinear htLinear;
+
+    string names[] = {"Alice", "Bob", "Charlie", "David", "Eve"};
+    string nums[]  = {"12345", "67890", "54321", "98765", "11223"};
+
+    for (int i = 0; i < 5; i++) {
+        htChain.insert(names[i], nums[i]);
+        htLinear.insert(names[i], nums[i]);
+    }
+
+    string searchKeys[] = {"Alice", "Charlie", "Eve", "Unknown"};
+
+    cout << "Comparison Results:\n";
+    for (int i = 0; i < 4; i++) {
+        int c1 = htChain.search(searchKeys[i]);
+        int c2 = htLinear.search(searchKeys[i]);
+        cout << searchKeys[i] << ": Chaining = " << c1 << ", Linear = " << c2 << endl;
+    }
+
+    return 0;
+}

@@ -1,0 +1,84 @@
+#include <iostream>
+#include <string>
+using namespace std;
+
+const int SIZE = 10;
+
+struct Node {
+    string key;
+    int value;
+    Node* next;
+    Node(string k, int v) : key(k), value(v), next(nullptr) {}
+};
+
+class HashTable {
+    Node* table[SIZE];
+
+    int hashFunc(string key) {
+        unsigned int hash = 0;
+        for (char c : key) hash = hash * 31 + c;
+        return hash % SIZE;
+    }
+
+public:
+    HashTable() { for (int i = 0; i < SIZE; i++) table[i] = nullptr; }
+
+    void insert(string key, int value) {
+        int i = hashFunc(key);
+        Node* n = table[i];
+        while (n) {
+            if (n->key == key) { n->value = value; return; }
+            n = n->next;
+        }
+        Node* newNode = new Node(key, value);
+        newNode->next = table[i];
+        table[i] = newNode;
+    }
+
+    int search(string key) {
+        int i = hashFunc(key);
+        Node* n = table[i];
+        while (n) {
+            if (n->key == key) return n->value;
+            n = n->next;
+        }
+        return -1;
+    }
+
+    bool remove(string key) {
+        int i = hashFunc(key);
+        Node* n = table[i], *prev = nullptr;
+        while (n) {
+            if (n->key == key) {
+                if (prev) prev->next = n->next;
+                else table[i] = n->next;
+                delete n;
+                return true;
+            }
+            prev = n; n = n->next;
+        }
+        return false;
+    }
+
+    void display() {
+        for (int i = 0; i < SIZE; i++) {
+            cout << "Bucket " << i << ": ";
+            for (Node* n = table[i]; n; n = n->next)
+                cout << "(" << n->key << ", " << n->value << ") ";
+            cout << endl;
+        }
+    }
+};
+
+int main() {
+    HashTable ht;
+    ht.insert("apple", 100);
+    ht.insert("banana", 200);
+    ht.insert("orange", 300);
+    ht.insert("apple", 150);
+    cout << "Search apple: " << ht.search("apple") << endl;
+    cout << "Search grape: " << ht.search("grape") << endl;
+    ht.remove("banana");
+    ht.display();
+    return 0;
+}

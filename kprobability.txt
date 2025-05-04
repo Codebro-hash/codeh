@@ -1,0 +1,61 @@
+#include <iostream>
+#include <climits>
+using namespace std;
+
+float a[20], b[20], wt[20][20], c[20][20];
+int r[20][20], n;
+
+void constructOBST() {
+    for (int i = 0; i < n; i++) {
+        c[i][i] = 0;
+        wt[i][i] = b[i];
+        r[i][i] = 0;
+        wt[i][i + 1] = b[i] + b[i + 1] + a[i + 1];
+        c[i][i + 1] = wt[i][i + 1];
+        r[i][i + 1] = i + 1;
+    }
+    c[n][n] = wt[n][n] = b[n];
+    r[n][n] = 0;
+
+    for (int m = 2; m <= n; m++) {
+        for (int i = 0; i <= n - m; i++) {
+            int j = i + m;
+            wt[i][j] = wt[i][j - 1] + a[j] + b[j];
+            c[i][j] = INT_MAX;
+            for (int k = i + 1; k <= j; k++) {
+                float cost = c[i][k - 1] + c[k][j] + wt[i][j];
+                if (cost < c[i][j]) {
+                    c[i][j] = cost;
+                    r[i][j] = k;
+                }
+            }
+        }
+    }
+
+    cout << "\nCost: " << c[0][n] << ", Root: " << r[0][n] << "\n";
+}
+
+void printTree(int i, int j) {
+    if (i >= j) return;
+    int root = r[i][j];
+    if (r[i][root - 1]) cout << "Left child of " << root << " is " << r[i][root - 1] << "\n";
+    if (r[root][j]) cout << "Right child of " << root << " is " << r[root][j] << "\n";
+    printTree(i, root - 1);
+    printTree(root, j);
+}
+
+int main() {
+    cout << "Enter number of keys: ";
+    cin >> n;
+    cout << "Enter successful search probabilities:\n";
+    for (int i = 1; i <= n; i++) {
+        cout << "p[" << i << "]: "; cin >> a[i];
+    }
+    cout << "Enter unsuccessful search probabilities:\n";
+    for (int i = 0; i <= n; i++) {
+        cout << "q[" << i << "]: "; cin >> b[i];
+    }
+    constructOBST();
+    printTree(0, n);
+    return 0;
+}
